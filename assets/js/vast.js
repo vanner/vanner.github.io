@@ -124,12 +124,7 @@
     var timeToShowCloseButton = function(video) {
         if(DEBUG){
             console.log('timeToShowCloseButton');
-            for (var name in video) {
-                if(video.hasOwnProperty(name)) {
-                    console.log('------------------');
-                    console.log(video.name);
-                }
-            }
+            console.log(video);
         }
         if(video.hasOwnProperty('duration')) {
             if(video.duration > 16) { //if it is long video, show close btn after 5 sec

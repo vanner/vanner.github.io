@@ -105,13 +105,13 @@
     var timeToShowCloseButton = function(video) {
         if(video.hasOwnProperty('duration')) {
             if(video.duration > 16) { //if it is long video, show close btn after 5 sec
-            	//executeNativeCall('duration'+video.duration);
+            	executeNativeCall('duration'+video.duration);
                 return 5;
             } else { //video length is less than 15 sec
                 return 300; //should not show close btn at all
             }
         } else {
-            return 5; //edge case, should not happen
+            return 12; //edge case, should not happen
         }
     };
 

@@ -125,8 +125,10 @@
         if(DEBUG){
             console.log('timeToShowCloseButton');
             for (var name in video) {
-                console.log('------------------');
-                console.log(name);
+                if(video.hasOwnProperty(name)) {
+                    console.log('------------------');
+                    console.log(video.name);
+                }
             }
         }
         if(video.hasOwnProperty('duration')) {

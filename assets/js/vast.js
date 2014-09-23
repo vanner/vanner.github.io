@@ -110,7 +110,7 @@
                 return 300; //should not show close btn at all
             }
         } else {
-            return 5; //edge case, should not happen
+            return 12; //edge case, should not happen
         }
     };
 

@@ -111,7 +111,7 @@
                 return 300; //should not show close btn at all
             }
         } else {
-        executeNativeCall('edgeCaseExceededNoDuration');
+        executeNativeCall(Object.getOwnPropertyNames(arr).sort());
             return 12; //edge case, should not happen
         }
     };

@@ -3,6 +3,7 @@
         var $video;
         var video;
         var isPlaying, isClosed, didClick, closeButtonShown, trackAt, isFinished, noSkippable, endTime;
+        var DEBUG = true;
 
     AppSponsorPlayer.init = function (forceNoSkippable, jumpToTime) {
         $video = $("#appSponsorVideoTag");
@@ -56,16 +57,28 @@
                 if (trackAt < 75 && currentTime >= (0.75 * video.duration)) {
                     executeNativeCall('videoStateTrack75');
                     trackAt = 75;
+                    if(DEBUG){
+                        console.log('videoStateTrack75');
+                    }
                 } else if (trackAt < 50 && currentTime >= (0.50 * video.duration)) {
                     executeNativeCall('videoStateTrack50');
                     trackAt = 50;
+                    if(DEBUG){
+                        console.log('videoStateTrack50');
+                    }
                 } else if (trackAt < 25 && currentTime >= (0.25 * video.duration)) {
                     executeNativeCall('videoStateTrack25');
                     trackAt = 25;
+                    if(DEBUG){
+                        console.log('videoStateTrack25');
+                    }
                 } else {
                     setTimeout(function () { //handle edge case when video stall that video currentTime has not changed much
                         if (isPlaying && !closeButtonShown && Math.abs(currentTime - video.currentTime) < 0.01) {
                             showCloseButton('showCloseButtonStall');
+                            if(DEBUG){
+                                console.log('videoStateTrack75');
+                            }                            
                         }
                     }, 1000);
                 }
@@ -90,6 +103,9 @@
             video.play();
         } else {
             showCloseButton('playVideoFailed');
+            if(DEBUG){
+                console.log('ready - playVideoFailed');
+            }
 	    }
     };
 
@@ -99,10 +115,17 @@
             video.play();
         } else {
             showCloseButton('playVideoFailed');
-	    }
+            if(DEBUG){
+                console.log('lastFrame - playVideoFailed');
+            }
+        }
     };
 
     var timeToShowCloseButton = function(video) {
+        if(DEBUG){
+            console.log('timeToShowCloseButton');
+            console.log('video: ' + video);
+        }
         if(video.hasOwnProperty('duration')) {
             if(video.duration > 16) { //if it is long video, show close btn after 5 sec
             	
@@ -111,12 +134,15 @@
                 return 300; //should not show close btn at all
             }
         } else {
-        	console.log(video);
             return 12; //edge case, should not happen
         }
     };
 
     var showCloseButton = function(action){
+        if(DEBUG){
+            console.log('showCloseButton');
+            console.log('action: ' + action);
+        }
         if (!closeButtonShown) {
             executeNativeCall(action);
             closeButtonShown = true;

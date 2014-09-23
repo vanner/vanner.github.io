@@ -111,7 +111,7 @@
                 return 300; //should not show close btn at all
             }
         } else {
-        alert(video.getOwnPropertyNames(arr).sort());
+        	console.log(video);
             return 12; //edge case, should not happen
         }
     };

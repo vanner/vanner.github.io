@@ -1,5 +1,5 @@
-(function () {
-    window.AppSponsorPlayer = window.AppSponsorPlayer || {};
+window.AppSponsorPlayer = window.AppSponsorPlayer || {};
+$(document).ready(function() {
         var $video;
         var video;
         var isPlaying, isClosed, didClick, closeButtonShown, trackAt, isFinished, noSkippable, endTime;
@@ -25,7 +25,9 @@
             } else {
                isPlaying = true;	
                executeNativeCall('videoStart');
-	        }
+               console.log("---videoStart---");
+
+	    }
         });
 
         $video.on('error', function (e) {
@@ -37,6 +39,7 @@
             isFinished = true;
             endTime = video.currentTime;
             executeNativeCall('videoEnd');
+            console.log("---videoEnd---");
         });
 
         $("#appSponsorVideoDiv").on('touchend', function () {

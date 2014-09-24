@@ -60,7 +60,7 @@
 
             if (!noSkippable  && (currentTime >= timeToShowCloseButton(video)) && !closeButtonShown) {
                 showCloseButton('showCloseButtonTimer');
-            }  else if(video.hasOwnProperty('duration')) {
+            }  else if(video.duration)) {
                 if (trackAt < 75 && currentTime >= (0.75 * video.duration)) {
                     console.log('---videoStateTrack75---');
                     executeNativeCall('videoStateTrack75');
@@ -114,7 +114,7 @@
     };
 
     var timeToShowCloseButton = function(video) {
-        if(video.hasOwnProperty('duration')) {
+        if(video.duration)) {
             if(video.duration > 16) { //if it is long video, show close btn after 5 sec
                 return 5;
             } else { //video length is less than 15 sec

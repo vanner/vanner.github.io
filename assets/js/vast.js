@@ -1,5 +1,5 @@
-window.AppSponsorPlayer = window.AppSponsorPlayer || {};
-$(document).ready(function() {
+(function () {
+    window.AppSponsorPlayer = window.AppSponsorPlayer || {};
         var $video;
         var video;
         var isPlaying, isClosed, didClick, closeButtonShown, trackAt, isFinished, noSkippable, endTime;
@@ -25,9 +25,7 @@ $(document).ready(function() {
             } else {
                isPlaying = true;	
                executeNativeCall('videoStart');
-               console.log("---videoStart---");
-
-	    }
+	        }
         });
 
         $video.on('error', function (e) {
@@ -39,7 +37,6 @@ $(document).ready(function() {
             isFinished = true;
             endTime = video.currentTime;
             executeNativeCall('videoEnd');
-            console.log("---videoEnd---");
         });
 
         $("#appSponsorVideoDiv").on('touchend', function () {
@@ -51,29 +48,18 @@ $(document).ready(function() {
 
         $video.on('timeupdate', function (e) {
             if (goToFrame) return; //do not allow to trigger event tracking again
-            
+                  
             var currentTime = video.currentTime;
-
-            console.log("===============================");
-            console.log("!noSkippable: " + !noSkippable);
-            console.log("currentTime: " + currentTime);
-            console.log("timeToShowCloseButton(video): " + timeToShowCloseButton(video));
-            console.log("!closeButtonShown: " + closeButtonShown);
-            console.log("===============================");
-
-            if (!noSkippable  && (currentTime >= timeToShowCloseButton(video)) && !closeButtonShown) {
+            if (!noSkippable  && currentTime >= timeToShowCloseButton(video) && !closeButtonShown) {
                 showCloseButton('showCloseButtonTimer');
-            }  else if(video.duration)) {
+            }  else if(video.hasOwnProperty('duration')) {
                 if (trackAt < 75 && currentTime >= (0.75 * video.duration)) {
-                    console.log('---videoStateTrack75---');
                     executeNativeCall('videoStateTrack75');
                     trackAt = 75;
                 } else if (trackAt < 50 && currentTime >= (0.50 * video.duration)) {
-                    console.log('---videoStateTrack50---');
                     executeNativeCall('videoStateTrack50');
                     trackAt = 50;
                 } else if (trackAt < 25 && currentTime >= (0.25 * video.duration)) {
-                    console.log('---videoStateTrack25---');
                     executeNativeCall('videoStateTrack25');
                     trackAt = 25;
                 } else {
@@ -117,7 +103,7 @@ $(document).ready(function() {
     };
 
     var timeToShowCloseButton = function(video) {
-        if(video.duration)) {
+        if(video.hasOwnProperty('duration')) {
             if(video.duration > 16) { //if it is long video, show close btn after 5 sec
                 return 5;
             } else { //video length is less than 15 sec

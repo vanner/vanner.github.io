@@ -1,0 +1,50 @@
+
+{
+
+	"HTMLFileName":"newsfeed_animate.html",
+	"pref__general__AutoKeyframePropertiesArmed":"false",
+	"viewStartY":"0",
+	"symbol_stage":{
+		"element_${twitter_feed}":{
+			"timelineColor2":"0x4fa275",
+			"timelineColor3":"0x456a55",
+			"animationEnabled":"true",
+			"timelineColor":"0x50bd82"},
+		"dummyStageParentHeight":"600px",
+		"element_${Stage}":{
+			"timelineColor2":"0xcbbd71",
+			"timelineColor3":"0x7b7652",
+			"timelineColor":"0xeedf79"},
+		"defaultStageParentWidth":"400px",
+		"element_${newsfeed_frame}":{
+			"timelineColor2":"0x81aa62",
+			"timelineColor3":"0x5b6c4d",
+			"timelineColor":"0x91c767"},
+		"defaultStageParentHeight":"600px",
+		"dummyStageParentWidth":"400px"},
+	"TransitionIdCounter":"19",
+	"CompZoomFactor":"100",
+	"StageZoomFactor":"75",
+	"pixelsPerMs":"0.2",
+	"ModelData":"{\
+\"stage\": {\
+   \"timelines\": {\
+      \"Default Timeline\": {\
+      }\
+   }},\
+\"Preloader\": {\
+   \"timelines\": {\
+\
+   }},\
+\"Down-level\": {\
+   \"timelines\": {\
+\
+   }}\
+}",
+	"stage-Default Timeline_playhead_ms":"11000",
+	"usedBOM":"false",
+	"nextElementColorIndex":"4",
+	"expanded:images/twitter_feed.jpg":"nil",
+	"pref__general__FilterNonAnimatedElements":"false",
+	"expanded:images/newsfeed_frame.jpg":"nil",
+	"viewStartMs":"10781.375"}

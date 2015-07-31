@@ -1,19 +1,27 @@
-<div id="manage"></div>
-<script type="text/javascript">
-  window.mopub = [{
-    ad_unit: "98eb35141dad4fb2a9dd957a5f01dfa1",
-    ad_container_id: "manage", // Specify the div or container to which you’d like to the mobile web tag
-    ad_width: 300,
-    ad_height: 250,
-    keywords: "", // Optionally pass keywords as a comma separated list
-  } ]; // To load additional ad units, add another object into the array.
-  
-  (function() {
-    var mopubjs = document.createElement("script");
-    mopubjs.async = true;
-    mopubjs.type = "text/javascript";
-    mopubjs.src = "//d1zg4cyg8u4pko.cloudfront.net/mweb/mobileweb.min.js";
-    var node = document.getElementsByTagName("script")[0];
-    node.parentNode.insertBefore(mopubjs, node);
-  })();
-</script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script type="text/javascript">
+    window.mopub = [{
+      ad_unit: "98eb35141dad4fb2a9dd957a5f01dfa1",
+      ad_container_id: "manage", // Specify the div or container to which you’d like to the mobile web tag
+      ad_width: 300,
+      ad_height: 250,
+      keywords: "", // Optionally pass keywords as a comma separated list
+    } ]; // To load additional ad units, add another object into the array.
+
+    (function() {
+      var mopubjs = document.createElement("script");
+      mopubjs.async = true;
+      mopubjs.type = "text/javascript";
+      mopubjs.src = "//d1zg4cyg8u4pko.cloudfront.net/mweb/mobileweb.min.js";
+      var node = document.getElementsByTagName("script")[0];
+      node.parentNode.insertBefore(mopubjs, node);
+    })();
+  </script>
+</head>
+<body>
+  <div id="manage"></div>
+</body>
+</html>

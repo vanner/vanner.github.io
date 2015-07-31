@@ -1,0 +1,19 @@
+                //Drop the below script in the head of your site
+<script type="text/javascript">
+  window.mopub = [{
+    ad_unit: "b299aa3453734b38bc7c3f8438d8da4c",
+    ad_container_id: "YOUR_AD_CONTAINER", // Specify the div or container to which you’d like to the mobile web tag
+    ad_width: 320,
+    ad_height: 50,
+    keywords: "", // Optionally pass keywords as a comma separated list
+  } ]; // To load additional ad units, add another object into the array.
+  
+  (function() {
+    var mopubjs = document.createElement("script");
+    mopubjs.async = true;
+    mopubjs.type = "text/javascript";
+    mopubjs.src = "//d1zg4cyg8u4pko.cloudfront.net/mweb/mobileweb.min.js";
+    var node = document.getElementsByTagName("script")[0];
+    node.parentNode.insertBefore(mopubjs, node);
+  })();
+</script>

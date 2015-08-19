@@ -110,16 +110,17 @@ manageAdTag.presentAd = function(){
   mngUtil.addMeta();
   mngUtil.addCss();
   console.log(manageAdTag.adData);
+  var container, body;
   if (manageAdTag.adData.html) {
     if (document.getElementById(manageAdTag.requestData.divID)) {
-      document.getElementById(manageAdTag.requestData.divID).innerHTML = manageAdTag.adData.html;
+      container = document.getElementById(manageAdTag.requestData.divID);
     }
     else {
       var container = document.createElement('div');
       container.id  = 'manageAd';
       manageAdTag.requestData.divID = container.id;
       container.innerHTML = manageAdTag.adData.html;
-      var body = document.body || document.getElementsByTagName('body')[0];
+      body = document.body || document.getElementsByTagName('body')[0];
       body.appendChild(container);
     }
     container.innerHTML = manageAdTag.adData.html;

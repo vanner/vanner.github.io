@@ -49,12 +49,12 @@ manageAdTag.load = function(data, cb){
     'bi'     : data.bundleID ? data.bundleID : mngUtil.throwError('bundleID missing'),
     'bidid'  : mngUtil.UUID(),
     'instl'  : '1',
-    'sdkv'   : mngConf.sdkv,
+    'sdkv'   : mngConf.sdkv || '',
     'orient' : mngUtil.getDeviceOrientation(),
     'zid'    : data.zoneID ? data.zoneID : mngUtil.throwError('zoneID missing'),
     'os'     : os,
-    'make'   : deviceInfo.make,
-    'model'  : deviceInfo.model,
+    'make'   : deviceInfo.make || '',
+    'model'  : deviceInfo.model || '',
     'dpid'   : data.deviceID ? (deviceIdentifierPrefix + data.deviceID) : mngUtil.throwError('deviceID (' + os + ' ' + deviceIdentifier + ') missing'),
     'height' : mngUtil.getScreenHeight(),
     'width'  : mngUtil.getScreenWidth(),
@@ -168,7 +168,7 @@ var mngUtil = {
   },
 
   deviceInfo: function(){
-    var os, osVersion, device, deviceType, userAgent,
+    var os = '', osVersionos = '', deviceos = '', deviceTypeos = '', modelos = '', userAgentos = '',
         userAgent = navigator.userAgent,
         device = (navigator.userAgent).match(/Android|iPhone|iPad|iPod|Silk/i);
 
@@ -185,6 +185,7 @@ var mngUtil = {
         osVersion = osVersion.replace('Android ', '');
         os        = 'Kindle';
         make      = 'Amazon';
+        model     = 'Kindle ' + deviceType;
     }
     else if (/Android/i.test(device)) {
         if (!/mobile/i.test(userAgent)) {

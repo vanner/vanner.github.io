@@ -1,4 +1,3 @@
-<div id="manageAd"></div>
 <script type="text/javascript" src="manageAdTag.js"></script>
 <script>
     function yourCallBackFunction(status) {
@@ -7,12 +6,12 @@
     };
 
     manageAdTag.getAd({
-        divID      : 'manageAd',
         zoneID     : "-MGMjl-JOnomfc8W2eSWMg",
         bundleName : "My Test App",
         bundleID   : "com.sigmaukraine.appsponsor-unity-demo",
         deviceID   : 'E334753F-AD6D-40C7-90A2-05D99372E7A6',
-        adid       : 'PT--22jm_BExMNUfVEeqDw'
+        adid       : 'PT--22jm_BExMNUfVEeqDw',
+        debug      : true
 
     }, yourCallBackFunction);
 

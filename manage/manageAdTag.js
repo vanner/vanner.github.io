@@ -1,4 +1,6 @@
-var manageAdTag = window.manageAdTag || {};
+var manageAdTag = window.manageAdTag || {
+  adData: {}
+};
 
 manageAdTag.cbResults = {
   status: 'ERROR'
@@ -10,15 +12,15 @@ var mngConf = {
   sdkv        : '3.3'
 };
 
-manageAdTag.loadAndPresentAd = function(data, cb){
+manageAdTag.loadAndPresentAd = function(params, cb){
   console.log('--- loadAndPresentAd ---');
-  manageAdTag.load(data, cb);
+  manageAdTag.load(params, cb);
   document.body.addEventListener('loadedAd', manageAdTag.presentAd, false);
 };
 
-manageAdTag.load = function(data, cb){
+manageAdTag.load = function(params, cb){
   console.log('--- load ---');
-  console.log(data);
+  console.log(params);
 
   var deviceInfo = mngUtil.deviceInfo(),
       os = deviceInfo.os,
@@ -45,27 +47,33 @@ manageAdTag.load = function(data, cb){
     'tz'     : mngUtil.getTimeDiff(),
     'ts'     : mngUtil.getTimeEpoch(),
     'lang'   : mngUtil.getLanguage(),
-    'bdn'    : data.bundleName ? data.bundleName : mngUtil.throwError('bundleName missing'),
-    'bi'     : data.bundleID ? data.bundleID : mngUtil.throwError('bundleID missing'),
+    'bdn'    : params.bundleName ? params.bundleName : mngUtil.throwError('bundleName missing'),
+    'bi'     : params.bundleID ? params.bundleID : mngUtil.throwError('bundleID missing'),
     'bidid'  : mngUtil.UUID(),
-    'instl'  : '1',
     'sdkv'   : mngConf.sdkv || '',
     'orient' : mngUtil.getDeviceOrientation(),
-    'zid'    : data.zoneID ? data.zoneID : mngUtil.throwError('zoneID missing'),
+    'zid'    : params.zoneID ? params.zoneID : mngUtil.throwError('zoneID missing'),
     'os'     : os,
     'make'   : deviceInfo.make || '',
     'model'  : deviceInfo.model || '',
-    'dpid'   : data.deviceID ? (deviceIdentifierPrefix + data.deviceID) : mngUtil.throwError('deviceID (' + os + ' ' + deviceIdentifier + ') missing'),
+    'dpid'   : params.deviceID ? (deviceIdentifierPrefix + params.deviceID) : mngUtil.throwError('deviceID (' + os + ' ' + deviceIdentifier + ') missing'),
     'height' : mngUtil.getScreenHeight(),
     'width'  : mngUtil.getScreenWidth(),
-    'jsSDK'  : '1',
+    'jsSDK'  : '1'
   };
 
-  if (data.adid) {
+  if (params.adid) {
     bid_params['isTest'] = '1';
-    bid_params['adid']   = data.adid;
+    bid_params['adid']   = params.adid;
   }
 
+  if (params.debug) {
+    bid_params['dpid'] = 'ifa:E334753F-AD6D-40C7-90A2-05D99372E7A6';
+    bid_params['os']   = 'iOS';
+  }
+
+  console.log('--- params ---');
+  console.log(bid_params);
   var bidder_url = mngConf.bidder_host + mngConf.bidder_path;
   mngUtil.JSONP(bidder_url,{
       callback : manageAdTag.loadedAd,
@@ -74,16 +82,22 @@ manageAdTag.load = function(data, cb){
   );
 };
 
+manageAdTag.isReady = function(){
+  return (manageAdTag.adData && manageAdTag.adData.loaded);
+};
+
 manageAdTag.loadedAd = function(data){
   console.log('--- loadedAd ---');
   console.log(data);
   manageAdTag.adData = data;
+  manageAdTag.adData.loaded = true;
   manageAdTag.loadAdEvent = new CustomEvent('loadedAd');
   document.body.dispatchEvent(manageAdTag.loadAdEvent);
 };
 
-manageAdTag.getAd = function(data, cb){
-  manageAdTag.loadAndPresentAd(data, cb);
+manageAdTag.getAd = function(params, cb){
+  manageAdTag.requestData = params;
+  manageAdTag.loadAndPresentAd(manageAdTag.requestData, cb);
   manageAdTag.presentAdEvent = new CustomEvent('presentedAd');
   document.body.addEventListener('presentedAd', function(){
     cb(manageAdTag.cbResults);
@@ -95,9 +109,19 @@ manageAdTag.presentAd = function(){
   console.log('--- presentAd ---');
   mngUtil.addMeta();
   mngUtil.addCss();
-
+  console.log(manageAdTag.adData);
   if (manageAdTag.adData.html) {
-    var container = document.getElementById('divID') ? document.getElementById('divID') : (document.body || document.getElementsByTagName('body')[0]);
+    if (document.getElementById(manageAdTag.requestData.divID)) {
+      document.getElementById(manageAdTag.requestData.divID).innerHTML = manageAdTag.adData.html;
+    }
+    else {
+      var container = document.createElement('div');
+      container.id  = 'manageAd';
+      manageAdTag.requestData.divID = container.id;
+      container.innerHTML = manageAdTag.adData.html;
+      var body = document.body || document.getElementsByTagName('body')[0];
+      body.appendChild(container);
+    }
     container.innerHTML = manageAdTag.adData.html;
     manageAdTag.cbResults.status = 'SUCCESS';
     document.body.dispatchEvent(manageAdTag.presentAdEvent);
@@ -154,6 +178,8 @@ var mngUtil = {
     }
     window['cb' + cbnum] = function(data) {
       try {
+        console.log('--- callback ---');
+        console.log(callback);
         callback(data);
       }
       finally {
@@ -163,12 +189,14 @@ var mngUtil = {
         }
       }
     }
+    console.log('--- script ---');
+    console.log(script);
     script.src = url + parameters;
     document.body.appendChild(script);
   },
 
   deviceInfo: function(){
-    var os = '', osVersionos = '', deviceos = '', deviceTypeos = '', modelos = '', userAgentos = '',
+    var os = '', osVersion = '', device = '', deviceType = '', make = '', model = '',
         userAgent = navigator.userAgent,
         device = (navigator.userAgent).match(/Android|iPhone|iPad|iPod|Silk/i);
 
@@ -180,7 +208,7 @@ var mngUtil = {
         else {
           deviceType = 'phone';
         }
-        osVersion = (navigator.userAgent).match(/Android\s+([\d\.]+)/i);
+        osVersion = (userAgent).match(/Android\s+([\d\.]+)/i);
         osVersion = osVersion[0] ? osVersion[0] : '';
         osVersion = osVersion.replace('Android ', '');
         os        = 'Kindle';
@@ -194,7 +222,7 @@ var mngUtil = {
         else {
           deviceType = 'Thone';
         }
-        osVersion = (navigator.userAgent).match(/Android\s+([\d\.]+)/i);
+        osVersion = (userAgent).match(/Android\s+([\d\.]+)/i);
         osVersion = osVersion[0] ? osVersion[0] : '';
         osVersion = osVersion.replace('Android ', '');
         os        = 'Android';
@@ -278,9 +306,14 @@ var mngUtil = {
 
   addCss: function(){
     var head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style');
+        style = document.createElement('style'),
+        cssString;
         style.type = 'text/css',
-        content = document.createTextNode('* {margin: 0; padding: 0} #' + + '{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);}');
+        cssString = '* {margin:0;padding:0}body{background-color:#000}';
+        if (manageAdTag.requestData.divID){
+          cssString += '#' + manageAdTag.requestData.divID + '{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);}';
+        }
+        style.innerHTML = cssString;
         head.appendChild(style);
   },
 

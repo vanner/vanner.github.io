@@ -1,18 +1,33 @@
 <div id="yourAdContainer"></div>
 <script type="text/javascript" src="manageAdTag.js"></script>
 <script>
+
+    var callbacks = {
+        error: function() {
+
+        },
+        success: function() {
+
+        }
+        adReady: function() {
+        }
+
+    }
+
     function yourCallBackFunction(status) {
         console.log("--- myJSCallBack ---");
         console.log(status);
     };
 
     manageAdTag.getAd({
+        adSize     : '',
         divID      : 'yourAdContainer',
         zoneID     : '-MGMjl-JOnomfc8W2eSWMg',
         bundleName : 'My Test App',
         bundleID   : 'com.sigmaukraine.appsponsor-unity-demo',
         deviceID   : 'E334753F-AD6D-40C7-90A2-05D99372E7A6',
-        adid       : 'PT--22jm_BExMNUfVEeqDw',
+        //adid       : 'PT--22jm_BExMNUfVEeqDw',
+        adid       : 'mil7BVnBkjQ3agbvLkwxCQ',
         debug      : true
 
     }, yourCallBackFunction);

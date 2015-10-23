@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="http://vanner.github.io/manage/manage-vast-v1.0.js"></script>
+</head>
+<body>
+<script>
+
+  window.MANAGE = window.MANAGE || {};
+  MANAGE.adData = {
+      clickUrl  : "{CLICK_URL}",
+      vastUrl   : "http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=is&c=23&pl=VAST&pli=15197428&PluID=0&pos=8299&ord=[timestamp]&cim=1",
+      vastEvents : {
+
+      }
+  };
+  var vast_url = 'http://bs.serving-sys.com/BurstingPipe/adServer.bs?cn=is&c=23&pl=VAST&pli=15197428&PluID=0&pos=8299&ord=[timestamp]&cim=1';
+  var options = {
+    targeting: {
+      view25_url: "http://vanpham.com/tracking?view25=true"
+    }
+  };
+
+  manageVastPlayer.loadVast(vast_url, options);
+</script>
+</body>
+</html>

@@ -1,13 +1,10 @@
 var manageVastPlayer = {
-
+  video_container: null,
   video_player: null,
   vast_url: '',
-  options: '',
+  vast_data: '',
+  vast_click_url: '#',
   vast_obj: {},
-
-  throwError: function(error) {
-    throw new Error(error);
-  },
 
   addMeta: function() {
     var viewport = document.querySelector('meta[name=viewport]'),
@@ -19,16 +16,6 @@ var manageVastPlayer = {
       head.appendChild(viewport);
     }
     viewport.setAttribute('content', viewportContent);
-  },
-
-  addJS: function(src, className) {
-    var head = document.head || document.getElementsByTagName('head')[0],
-      js = document.createElement('script');
-    js.type = 'text/javascript';
-    js.className = className ? className : '';
-    js.async = true;
-    js.src = src;
-    head.appendChild(js);
   },
 
   addCss: function(container_id) {
@@ -45,9 +32,10 @@ var manageVastPlayer = {
   },
 
   parseVast: function() {
-    var me = this;
-    vast_url = me.vast_url;
-    options = me.options;
+    vast_url = this.vast_url;
+    vast_data = this.vast_data;
+    var num = Math.random().toString(16).slice(2);
+    vast_url = vast_url.replace("[timestamp]", num);
     var xmlHttpReq, xmlDoc;
     if (window.XMLHttpRequest) {
       xmlHttpReq = new XMLHttpRequest();
@@ -115,14 +103,61 @@ var manageVastPlayer = {
             var strSecs = (+arrD[0]) * 60 * 60 + (+arrD[1]) * 60 + (+arrD[2]);
             vast_obj.duration = strSecs;
           }
-
         }
       }
 
       var companion_ads = creative[i].getElementsByTagName("CompanionAds");
       if (companion_ads != null) {
-        for (var j = 0; j < companion_ads.length; j++) {
-          console.log()
+        var companions = creative[i].getElementsByTagName("Companion");
+        if (companions != null) {
+          for (var j = 0; j < companions.length; j++) {
+            var width = companions[j].getAttribute('width') || null;
+            var height = companions[j].getAttribute('height') || null;
+            var static_resources = companions[j].getElementsByTagName("StaticResource");
+            for (var k = 0; k < static_resources.length; k++) {
+              if (static_resources[k].childNodes[0].nodeValue) {
+                vast_obj.static_end_card = static_resources[k].childNodes[0].nodeValue;
+                if (width) {
+                  vast_obj.static_end_card_width = companions[j].getAttribute('width');
+                }
+                if (height) {
+                  vast_obj.static_end_card_height = companions[j].getAttribute('height');
+                }
+                break;
+              }
+            }
+            var end_card_tracking_events = companions[j].getElementsByTagName("TrackingEvents");
+            for (var k = 0; k < end_card_tracking_events.length; k++) {
+              var end_card_trackings = end_card_tracking_events[k].getElementsByTagName("Tracking");
+              for (var l = 0; l < end_card_trackings.length; l++) {
+                if (end_card_trackings[l].getAttribute('event') == "creativeView") {
+                  vast_obj.end_card_impression = end_card_trackings[l].childNodes[0].nodeValue;
+                }
+              }
+
+            }
+            var end_card_clickthrough = companions[j].getElementsByTagName("CompanionClickThrough");
+            for (var k = 0; k < end_card_clickthrough.length; k++) {
+              if (end_card_clickthrough[k].childNodes[0].nodeValue) {
+                vast_obj.end_card_clickthrough_url  = end_card_clickthrough[k].childNodes[0].nodeValue
+                break;
+              }
+            }
+
+            var html_resources = companions[j].getElementsByTagName("HTMLResource");
+            for (var k = 0; k < html_resources.length; k++) {
+              if (html_resources[k].childNodes[0].nodeValue) {
+                vast_obj.html_end_card = html_resources[k].childNodes[0].nodeValue;
+                if (width) {
+                  vast_obj.html_end_card_width = companions[j].getAttribute('width');
+                }
+                if (height) {
+                  vast_obj.html_end_card_height = companions[j].getAttribute('height');
+                }
+                break;
+              }
+            }
+          }
         }
       }
     }
@@ -137,10 +172,23 @@ var manageVastPlayer = {
     }
 
     for (var i = 0; i < tracking_events.length; i++) {
+      if (tracking_events[i].getAttribute('event') == "creativeView") {
+        if (vast_obj.tracking_creative_view != null) {
+          vast_obj.tracking_creative_view += "|" + tracking_events[i].childNodes[0].nodeValue;
+        }
+        else {
+          vast_obj.tracking_creative_view = tracking_events[i].childNodes[0].nodeValue;
+        }
+        if (vast_data.creativeView) {
+          vast_obj.tracking_creative_view += "|" + vast_data.creativeView;
+        }
+        vast_obj.tracking_creative_view_tracked = false;
+      }
       if (tracking_events[i].getAttribute('event') == "start") {
         if (vast_obj.tracking_start != null) {
           vast_obj.tracking_start += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_start = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_start_tracked = false;
@@ -148,51 +196,56 @@ var manageVastPlayer = {
       if (tracking_events[i].getAttribute('event') == "firstQuartile") {
         if (vast_obj.tracking_first_quartile != null) {
           vast_obj.tracking_first_quartile += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_first_quartile = tracking_events[i].childNodes[0].nodeValue;
         }
-        if (options.vastEvents && options.vastEvents.view25_url) {
-          vast_obj.tracking_first_quartile += " " + options.vastEvents.view25_url;
+        if (vast_data.firstQuartile) {
+          vast_obj.tracking_first_quartile += "|" + vast_data.firstQuartile;
         }
         vast_obj.tracking_first_quartile_tracked = false;
       }
       if (tracking_events[i].getAttribute('event') == "midpoint") {
         if (vast_obj.tracking_midpoint != null) {
           vast_obj.tracking_midpoint += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_midpoint = tracking_events[i].childNodes[0].nodeValue;
         }
-        if (options.vastEvents && options.vastEvents.view50_url) {
-          vast_obj.tracking_midpoint += "|" + options.vastEvents.view50_url;
+        if (vast_data.midpoint) {
+          vast_obj.tracking_midpoint += "|" + vast_data.midpoint;
         }
         vast_obj.tracking_midpoint_tracked = false;
       }
       if (tracking_events[i].getAttribute('event') == "thirdQuartile") {
         if (vast_obj.tracking_third_quartile != null) {
           vast_obj.tracking_third_quartile += " " + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_third_quartile = tracking_events[i].childNodes[0].nodeValue;
         }
-        if (options.vastEvents && options.vastEvents.view75_url) {
-          vast_obj.tracking_third_quartile += "|" + options.vastEvents.view75_url;
+        if (vast_data.thirdQuartile) {
+          vast_obj.tracking_third_quartile += "|" + vast_data.thirdQuartile;
         }
         vast_obj.tracking_third_quartile_tracked = false;
       }
       if (tracking_events[i].getAttribute('event') == "complete") {
         if (vast_obj.tracking_complete != null) {
           vast_obj.tracking_complete += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_complete = tracking_events[i].childNodes[0].nodeValue;
         }
-        if (options.vastEvents && options.vastEvents.view100_url) {
-          vast_obj.tracking_complete += " " + options.vastEvents.view100_url;
+        if (vast_data.complete) {
+          vast_obj.tracking_complete += "|" + vast_data.complete;
         }
         vast_obj.tracking_complete_tracked = false;
       }
       if (tracking_events[i].getAttribute('event') == "mute") {
         if (vast_obj.tracking_mute != null) {
           vast_obj.tracking_mute += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_mute = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_mute_tracked = false;
@@ -200,7 +253,8 @@ var manageVastPlayer = {
       if (tracking_events[i].getAttribute('event') == "unmute") {
         if (vast_obj.tracking_unmute != null) {
           vast_obj.tracking_unmute += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_unmute = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_unmute_tracked = false;
@@ -208,7 +262,8 @@ var manageVastPlayer = {
       if (tracking_events[i].getAttribute('event') == "pause") {
         if (vast_obj.tracking_pause != null) {
           vast_obj.tracking_pause += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_pause = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_pause_tracked = false;
@@ -216,7 +271,8 @@ var manageVastPlayer = {
       if (tracking_events[i].getAttribute('event') == "resume") {
         if (vast_obj.tracking_resume != null) {
           vast_obj.tracking_resume += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_resume = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_resume_tracked = false;
@@ -224,7 +280,8 @@ var manageVastPlayer = {
       if (tracking_events[i].getAttribute('event') == "fullscreen") {
         if (vast_obj.tracking_fullscreen != null) {
           vast_obj.tracking_fullscreen += "|" + tracking_events[i].childNodes[0].nodeValue;
-        } else {
+        }
+        else {
           vast_obj.tracking_fullscreen = tracking_events[i].childNodes[0].nodeValue;
         }
         vast_obj.tracking_fullscreen_tracked = false;
@@ -245,7 +302,6 @@ var manageVastPlayer = {
           var arrTrack = vast_obj.tracking_start.split("|");
           for (var i = 0; i < arrTrack.length; i++) {
             var img_track = new Image();
-            console.log(arrTrack[i]);
             img_track.src = arrTrack[i];
           }
         }
@@ -258,7 +314,6 @@ var manageVastPlayer = {
           var arrTrack = vast_obj.tracking_first_quartile.split("|");
           for (var i = 0; i < arrTrack.length; i++) {
             var img_track = new Image();
-            console.log(arrTrack[i]);
             img_track.src = arrTrack[i];
           }
         }
@@ -271,7 +326,6 @@ var manageVastPlayer = {
           var arrTrack = vast_obj.tracking_midpoint.split("|");
           for (var i = 0; i < arrTrack.length; i++) {
             var img_track = new Image();
-            console.log(arrTrack[i]);
             img_track.src = arrTrack[i];
           }
         }
@@ -284,7 +338,6 @@ var manageVastPlayer = {
           var arrTrack = vast_obj.tracking_third_quartile.split("|");
           for (var i = 0; i < arrTrack.length; i++) {
             var img_track = new Image();
-            console.log(arrTrack[i]);
             img_track.src = arrTrack[i];
           }
         }
@@ -297,7 +350,6 @@ var manageVastPlayer = {
           var arrTrack = vast_obj.tracking_complete.split("|");
           for (var i = 0; i < arrTrack.length; i++) {
             var img_track = new Image();
-            console.log(arrTrack[i]);
             img_track.src = arrTrack[i];
           }
         }
@@ -307,14 +359,48 @@ var manageVastPlayer = {
     }
   },
 
-  loadVast: function(vast_url, options) {
-    this.vast_url = vast_url;
-    this.options = options;
-    this.addMeta();
-    this.addCss('manageVideo');
-    this.vastLoadEvent = new CustomEvent('vastLoadEvent');
-    window.addEventListener('vastLoadEvent', this.buildVideo, false);
-    this.parseVast();
+  pingTrackingPixel: function(url) {
+    var image = new Image(1, 1);
+    image.src = url;
+  },
+
+  videoComplete: function() {
+    var vast_obj = manageVastPlayer.vast_obj,
+        container = manageVastPlayer.video_container,
+        isTouchDevice = (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch),
+        eventType = (isTouchDevice) ? 'touchend' : 'click';
+
+    if (vast_obj.static_end_card) {
+      var end_card = document.createElement("div"),
+          img = document.createElement("img");
+      end_card.id = 'manageEndCard';
+      img.src = vast_obj.static_end_card;
+      if (vast_obj.static_end_card_height && vast_obj.static_end_card_width) {
+        img.width  = vast_obj.static_end_card_width;
+        img.height = vast_obj.static_end_card_height;
+      }
+      container.innerHTML = '';
+      end_card.appendChild(img);
+      container.appendChild(end_card);
+
+      if (vast_obj.end_card_impression) {
+        manageVastPlayer.pingTrackingPixel(vast_obj.end_card_impression);
+      }
+
+      if (MANAGE.adData.clickUrl && vast_obj.end_card_clickthrough_url) {
+        manageVastPlayer.vast_click_url = MANAGE.adData.clickUrl + '&-ru=' + encodeURI(vast_obj.end_card_clickthrough_url);
+      }
+      else if (MANAGE.adData.clickUrl) {
+        manageVastPlayer.vast_click_url = MANAGE.adData.clickUrl;
+      }
+      else if (vast_obj.end_card_clickthrough_url) {
+        manageVastPlayer.vast_click_url = vast_obj.end_card_clickthrough_url;
+      }
+
+      container.addEventListener(eventType, function(){
+        manageVastPlayer.openSite(manageVastPlayer.vast_click_url);
+      });
+    }
   },
 
   buildVideo: function() {
@@ -322,36 +408,165 @@ var manageVastPlayer = {
     if (!vast_obj) {
       return;
     }
-    var video_link = document.createElement('a'),
-      video_player = document.createElement('video');
-    video_player.id = 'manageVideo';
-    video_player.setAttribute('webkit-playsinline', '');
+    var $video_container = document.createElement('div'),
+        $video_player = document.createElement('video'),
+        isTouchDevice = (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch),
+        eventType = (isTouchDevice) ? 'touchend' : 'click';
+    $video_container.id = 'manageAd';
+    $video_player.id = 'manageVideo';
+    $video_player.setAttribute('webkit-playsinline', '');
+    $video_player.setAttribute('autoplay', '');
     if (vast_obj.media_file_webm) {
       var webm = document.createElement('source');
       webm.src = vast_obj.media_file_webm;
       webm.type = 'video/webm';
-      video_player.appendChild(webm);
+      $video_player.appendChild(webm);
     }
     if (vast_obj.media_file_mp4) {
       var mp4 = document.createElement('source');
       mp4.src = vast_obj.media_file_mp4;
       mp4.type = 'video/mp4';
-      video_player.appendChild(mp4);
+      $video_player.appendChild(mp4);
     }
-    video_link.appendChild(video_player);
-    document.body.appendChild(video_player);
-
-    if (video_player.hasAttribute('controls')) {
-      video_player.removeAttribute('controls');
+    $video_container.appendChild($video_player);
+    document.body.appendChild($video_container);
+    // Remove controls
+    if ($video_player.hasAttribute('controls')) {
+      $video_player.removeAttribute('controls');
     }
-    manageVastPlayer.video_player = video_player;
+    // Load close button if MRAID
+    if (typeof (mraid) !== 'undefined') {
+      manageVastPlayer.buildCloseButton();
+    }
+    manageVastPlayer.video_container = $video_container;
+    manageVastPlayer.video_player = $video_player;
+    // Run timeUpdate during duration of video
     manageVastPlayer.video_player.addEventListener('timeupdate', manageVastPlayer.timeUpdate);
+    // Video complete
+    manageVastPlayer.video_player.addEventListener('ended', manageVastPlayer.videoComplete);
+
+    // Click event for video
+    if (MANAGE.adData.clickUrl && vast_obj.clickthrough_url) {
+      manageVastPlayer.vast_click_url = MANAGE.adData.clickUrl + '&-ru=' + encodeURI(vast_obj.clickthrough_url);
+    }
+    else if (MANAGE.adData.clickUrl) {
+      manageVastPlayer.vast_click_url = MANAGE.adData.clickUrl;
+    }
+    else if (vast_obj.clickthrough_url) {
+      manageVastPlayer.vast_click_url = vast_obj.clickthrough_url;
+    }
+
+    // Video Click
+    manageVastPlayer.video_player.addEventListener(eventType, function(){
+      if (vast_obj.clickthrough_tracking){
+        manageVastPlayer.pingTrackingPixel(vast_obj.clickthrough_tracking);
+      }
+      manageVastPlayer.openSite(manageVastPlayer.vast_click_url);
+    });
+
+    // Fire Impressions
+    if (vast_obj.impression != null){
+      for(var k = 0; k < vast_obj.impression.length; k++){
+        manageVastPlayer.pingTrackingPixel(vast_obj.impression[k].childNodes[0].nodeValue);
+      }
+    }
     manageVastPlayer.video_player.play();
+    //manageVastPlayer.video_player.muted = true;
+
+    // Fire CreativeView
+    if (vast_obj.tracking_creative_view) {
+      var creative_view = vast_obj.tracking_creative_view.split("|");
+      for (var i = 0; i < creative_view.length; i++) {
+        var img_track = new Image();
+        img_track.src = creative_view[i];
+      }
+    }
   },
 
-  pingPixel: function(url) {
-    var image = new Image(1, 1);
-    image.src = url;
-  }
+  buildCloseButton: function() {
+    var $head = document.head || document.getElementsByTagName('head')[0],
+        $container = document.getElementById('manageAd'),
+        $closeBtn = document.createElement('div'),
+        isTouchDevice = (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch),
+        eventType = (isTouchDevice) ? 'touchend' : 'click';
+    $closeBtn.id = 'manage-close';
+    $closeBtn.style.display = 'none';
+    if (MANAGE.adData.customClose.position) {
+      $closeBtn.classList.add(MANAGE.adData.customClose.position);
+    }
+    $container.appendChild($closeBtn);
+    if (MANAGE.adData.customClose.style) {
+      var customCloseCssHost = MANAGE.cssHost || "https://cdn.manage.com/assets/css/mraid/";
+      var $closeCSS  = document.createElement('link');
+      $closeCSS.rel  = 'stylesheet';
+      $closeCSS.type = 'text/css';
+      $closeCSS.href = customCloseCssHost + 'close-' + MANAGE.adData.customClose.style + '.css';
+      $closeCSS.media = 'all';
+      $head.appendChild($closeCSS);
+      $closeBtn.classList.add(MANAGE.adData.customClose.style);
+    }
+    $closeBtn.addEventListener(eventType, function() {
+      if (typeof(mraid) !== 'undefined') {
+        mraid.close();
+      }
+      manageVastPlayer.video_player.pause();
+    });
+  },
 
+  loadVast: function(vast_url, vast_data) {
+    this.vast_url = vast_url;
+    try {
+      var obj = JSON.parse(vast_data);
+      if (obj && typeof obj === "object" && obj !== null) {
+        this.vast_data = obj;
+      }
+    }
+    catch (e) {}
+    this.addMeta();
+    this.addCss('manageAd');
+    this.vastLoadEvent = new CustomEvent('vastLoadEvent');
+    window.addEventListener('vastLoadEvent', this.buildVideo, false);
+    this.parseVast();
+  },
+
+  openSite: function(url) {
+    if (typeof (mraid) !== 'undefined') {
+      mraid.open(url);
+    }
+    else {
+      window.location = url;
+    }
+  },
+
+  throwError: function(error) {
+    throw new Error(error);
+  }
+}
+
+function mraidIsReady(){
+  mraid.removeEventListener("ready", mraidIsReady);
+  manageVastPlayer.loadVast(MANAGE.adData.vastUrl, MANAGE.adData.vastData);
+}
+
+function doReadyCheck(){
+  if (mraid.getState() == 'loading') {
+    mraid.addEventListener("ready", mraidIsReady);
+  }
+  else {
+    manageVastPlayer.loadVast(MANAGE.adData.vastUrl, MANAGE.adData.vastData);
+  }
+}
+
+if (MANAGE.adData.vastUrl) {
+  if (typeof mraid != "undefined") {
+    doReadyCheck();
+  }
+  else {
+    window.addEventListener("DOMContentLoaded", function() {
+      manageVastPlayer.loadVast(MANAGE.adData.vastUrl, MANAGE.adData.vastData);
+    });
+  }
+}
+else {
+  manageVastPlayer.throwError("Missing vastUrl");
 }
